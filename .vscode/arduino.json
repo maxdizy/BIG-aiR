@@ -1,7 +1,7 @@
 {
     "board": "arduino:avr:nano",
     "programmer": "stlink",
-    "sketch": "rightFoot\\rightFoot.ino",
+    "sketch": "footSensorPack\\footSensorPack.ino",
     "configuration": "cpu=atmega328",
     "port": "COM7"
 }
