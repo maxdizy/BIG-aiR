@@ -1,0 +1,13 @@
+Topics covered
+- Hardware demo
+- redefined project scope (just sticking with website instead of OS app, will drag and drop the data file from the onboard SD card into website and backend will handle data processing and AI)
+- chatted about snowboarding for a while
+
+To Do's before next meeting
+- Everyone: you all have your own branches now, make a text file with something in it and push to your own branch (P.S. please make sure your pushing to your own branch not master) (look up online or the video resource I gave you guys how to do this if your not sure)
+- Jackson: Make CAD model for electronics housing (holes for switch and LED) (Waterproof) -> get me STL and I'll figure out printing
+- Ivan and Will: Wait for the data file I'll send out later this week, I'm gonna jump around my room and do some spins with the sensors on. Work on splitting the data up into seperate jumps (or tricks)
+- Zane: either continue working on front end or do the same thing as Ivan and Will above.
+- Max: I'll do some backend stuff and get the first full prototype of the sensor pack done
+
+Let me know if you guys have any questions!
