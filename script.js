@@ -34,21 +34,33 @@ dragArea.addEventListener('drop', (event) => {
 });
 
 function sendFileToServer(file) {
-    // Replace with backend server endpoint
-    let serverUrl = 'BACKEND_SERVER_ENDPOINT_HERE';
+    // Replace URL with Django backend endpoint
+    let serverUrl = 'https://yourdomain.com/api/upload/';
 
+    // Create a new FormData object
     let formData = new FormData();
-    formData.append('file', file);
+
+    // Append the file to the FormData object
+    // Replace 'fileFieldName' with the field name expected by Django backend
+    formData.append('fileFieldName', file);
 
     fetch(serverUrl, {
-        method: 'POST',
-        body: formData
+        method: 'POST', // Use POST method for file upload
+        body: formData,  // Attach the FormData object
+        // headers: {},  // If needed, add headers here
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         console.log('Success:', data);
+        // Handle success 
     })
     .catch((error) => {
         console.error('Error:', error);
+        // Handle errors 
     });
 }
