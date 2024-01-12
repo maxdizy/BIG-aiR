@@ -11,8 +11,9 @@ Adafruit_MPU6050 mpu;
 const int FL = A1;
 const int FR = A2;
 const int BR = A3;
-const int BL = A6;
-//SDA = A4, SCL = A5
+const int BL = A7;
+const int SDA = A4;
+const int SCL = A5;
 
 float calFL;
 float calFR;
@@ -77,21 +78,21 @@ void setup(){
   calibrate();
   Serial.println("right foot sensor is calibrated");
 
-  // //MPU SETUP
-  // if (!mpu.begin()) {
-  //   Serial.println("failed to find MPU6050 chip");
-  // }else{
-	//   Serial.println("MPU6050 found");
-  // }
+  //MPU SETUP
+  if (!mpu.begin()) {
+    Serial.println("failed to find MPU6050 chip");
+  }else{
+	  Serial.println("MPU6050 found");
+  }
 
-	// // set accelerometer range to +-8G
-	// mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+	// set accelerometer range to +-8G
+	mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
 
-	// // set gyro range to +- 500 deg/s
-	// mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+	// set gyro range to +- 500 deg/s
+	mpu.setGyroRange(MPU6050_RANGE_500_DEG);
 
-	// // set filter bandwidth to 21 Hz
-	// mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+	// set filter bandwidth to 21 Hz
+	mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 
   // //SD SETUP
   // pinMode(CS, OUTPUT);
@@ -115,43 +116,43 @@ void loop() {
   float frontPerc = (valFront/(valFront+valBack)) * 100;
   float backPerc = (valBack/(valFront+valBack)) * 100;
 
-  // //get mpu readings
-  // mpu.getEvent(&a, &g, &temp);
+  //get mpu readings
+  mpu.getEvent(&a, &g, &temp);
 
-	// // //print sensor readings
-	// // Serial.print("Acceleration X: ");
-	// // Serial.print(a.acceleration.x);
-	// // Serial.print(", Y: ");
-	// // Serial.print(a.acceleration.y);
-	// // Serial.print(", Z: ");
-	// // Serial.print(a.acceleration.z);
-	// // Serial.println(" m/s^2");
+	//print sensor readings
+	Serial.print("Acceleration X: ");
+	Serial.print(a.acceleration.x);
+	Serial.print(", Y: ");
+	Serial.print(a.acceleration.y);
+	Serial.print(", Z: ");
+	Serial.print(a.acceleration.z);
+	Serial.println(" m/s^2");
 
-	// // Serial.print("Rotation X: ");
-	// // Serial.print(g.gyro.x);
-	// // Serial.print(", Y: ");
-	// // Serial.print(g.gyro.y);
-	// // Serial.print(", Z: ");
-	// // Serial.print(g.gyro.z);
-	// // Serial.println(" rad/s");
+	Serial.print("Rotation X: ");
+	Serial.print(g.gyro.x);
+	Serial.print(", Y: ");
+	Serial.print(g.gyro.y);
+	Serial.print(", Z: ");
+	Serial.print(g.gyro.z);
+	Serial.println(" rad/s");
 
-	// // Serial.print("Temperature: ");
-	// // Serial.print(temp.temperature);
-	// // Serial.println(" degC");
+	Serial.print("Temperature: ");
+	Serial.print(temp.temperature);
+	Serial.println(" degC");
 
-  Serial.print(frontPerc);
-  Serial.print(",");
-  Serial.print(backPerc);
-  Serial.print(",");
-  Serial.print(analogRead(FR));
-  Serial.print(",");
-  Serial.print(analogRead(FL));
-  Serial.print(",");
-  Serial.print(analogRead(BL));
-  Serial.print(",");
-  Serial.print(analogRead(BR));
-  Serial.print(",");
-  Serial.println(millis());
+  // Serial.print(frontPerc);
+  // Serial.print(",");
+  // Serial.print(backPerc);
+  // Serial.print(",");
+  // Serial.print(analogRead(FR));
+  // Serial.print(",");
+  // Serial.print(analogRead(FL));
+  // Serial.print(",");
+  // Serial.print(analogRead(BL));
+  // Serial.print(",");
+  // Serial.print(analogRead(BR));
+  // Serial.print(",");
+  // Serial.println(millis());
 
   // // Serial.println("");
 
