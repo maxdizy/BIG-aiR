@@ -5,7 +5,7 @@ Adafruit MPU6050 w/ all its dependancies
 
 /*
 Python dependancies:
-Tensorflow
+tensorflow[and-cuda]
 numpy
 pandas
 */
