@@ -1,0 +1,20 @@
+Discussed next steps:
+- Robotic stuff is going to be hard to do together cause you need the hardware to actually work on it (duh) so we're gonna start trying to get all the code and AI shit working with the test data we have now.
+
+What to do:
+- We are going to use Linux now (Tensorflow is better supported, servers are gonna use it, and looks good on resume). Don't worry, I'm not gonna make you duel boot. We are gonna use WSL (Windows Subsystem for Linux). 
+Basically this just lets you open a linux terminal window on windows. Check out the resources folder for instructions on downloading this.
+- Once wsl is installed, we want to do AI stuff. Hopefully by now you have your data handler code that splits the data into tricks. Now we want to take those tricks and feed it into a model.
+- Training your model; I'm gonna make another dataset similar to the testData1.csv file. This will be our training data. I want everyone to try to train a RNN model using Tensorflow with this data. I know this is a heavy task,
+i'm here to support if you need it but i'm sure we're all stackoverflow pros by now. I will post some solutions I come up with as I go and you can try to understand my code.
+- After you train your model we will test it with the testing data (testdata1.csv) to see how accurate it is (will be terrible cause all this is fake data).
+- At this point we'll integrate it into our backend so we can upload a file, it will split up tricks, run the model for each trick, and give terrible suggestions on what to do next.
+- Now we need our actual data which I will try to get in the next few weeks.
+- test and iterate!!
+
+For the next two weeks:
+1. get WSL working (check resources)
+2. train a RNN model with tensorflow using online resources (don't worry about changing paramaters now, we'll tune later) (big task)
+just that for now. We will get together at our next meeting and see where everyone is at. If you are having problems (everyone including myself probably will) don't hesitate to reach out and ask.
+
+good luck team!!
