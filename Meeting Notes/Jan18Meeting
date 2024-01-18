@@ -3,7 +3,7 @@ Discussed next steps:
 
 What to do:
 - We are going to use Linux now (Tensorflow is better supported, servers are gonna use it, and looks good on resume). Don't worry, I'm not gonna make you duel boot. We are gonna use WSL (Windows Subsystem for Linux). 
-Basically this just lets you open a linux terminal window on windows. Check out the resources folder for instructions on downloading this.
+Basically this just lets you open a linux terminal window on windows. Check out https://learn.microsoft.com/en-us/windows/wsl/install for instructions on downloading this.
 - Once wsl is installed, we want to do AI stuff. Hopefully by now you have your data handler code that splits the data into tricks. Now we want to take those tricks and feed it into a model.
 - Training your model; I'm gonna make another dataset similar to the testData1.csv file. This will be our training data. I want everyone to try to train a RNN model using Tensorflow with this data. I know this is a heavy task,
 i'm here to support if you need it but i'm sure we're all stackoverflow pros by now. I will post some solutions I come up with as I go and you can try to understand my code.
