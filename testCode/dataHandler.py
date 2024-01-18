@@ -23,9 +23,9 @@ for i in range(df['FR'].size-2):
         tricks.append(df.iloc[max(0, trickStart-4) : min(trickEnd+4, df['FR'].size-2)]) #create trick df with +- 1000 millis
         inAir = False
 
-trickNum = 1
-for trickData in tricks:
-    print('Trick ' + str(trickNum) + ':\n')
-    print(trickData)
-    print('\n')
-    trickNum += 1
+# trickNum = 1
+# for trickData in tricks:
+#     print('Trick ' + str(trickNum) + ':\n')
+#     print(trickData)
+#     print('\n')
+#     trickNum += 1
