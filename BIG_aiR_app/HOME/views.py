@@ -3,3 +3,6 @@ from django.http import HttpResponse
 
 def home(request):
     return render(request, 'HOME/index.html')
+
+def upload(request, FILE):
+    
