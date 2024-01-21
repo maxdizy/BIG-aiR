@@ -1,0 +1,5 @@
+Current Issues and who is handeling them:
+- Data collection: Max
+- Pad Sequences (every trick must have the same sequence_length):
+    - This probably means adjusting the dataHandler code to not take whole tricks, but just the take offs (most important part)
+- equal time steps (time steps must be equal): Max
