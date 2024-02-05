@@ -7,30 +7,28 @@
 
 Adafruit_MPU6050 mpu;
 
-//sensor vars
+// sensor vars
 const int FL = A0;
 const int FR = A1;
 const int BR = A2;
 const int BL = A3;
-
 float calFL;
 float calFR;
 float calBR;
 float calBL;
+int amplifier = 1.825;
 
-//SD vars
+// SD vars
 const int CS = 10;
-
 String dataString;
 File sensorData;
-
-int amplifier = 1.825;
 
 void calibrate(){
   calFL = analogRead(FL);
   calFR = analogRead(FR);
   calBR = analogRead(BR);
   calBL = analogRead(BL);
+  Serial.println("right foot sensor is calibrated");
 }
 
 void saveData(){
@@ -48,10 +46,10 @@ void saveData(){
   }
 }
 
-void setup(){
+void setup(void){
   Serial.begin(115200);
 
-  //FOOT SENSOR SETUP
+  // foot sensor setup
   pinMode(FL, INPUT);
   pinMode(FR, INPUT);
   pinMode(BR, INPUT);
@@ -69,30 +67,21 @@ void setup(){
   }
   else if(analogRead(BL)==0){
       Serial.println("WARNING. right foot back left sensor not connected.");
-  }
-  Serial.println("right foot pressure sensor reading beginning...");
-
-  //calibrate foot sensor
+  }  
   calibrate();
-  Serial.println("right foot sensor is calibrated");
 
-  //MPU SETUP
+  // mpu setup
   Serial.println("searching for MPU6050 chip");
-   {
+  while (!mpu.begin()) {
     Serial.print(".");
   }
 	Serial.println("MPU6050 found");
 
-	// set accelerometer range to +-8G
 	mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-
-	// set gyro range to +- 500 deg/s
 	mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-
-	// set filter bandwidth to 21 Hz
 	mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 
-  //SD SETUP
+  // SD setup
   pinMode(CS, OUTPUT);
 
   Serial.println("Searching for SD card module");
