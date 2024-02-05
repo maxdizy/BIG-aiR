@@ -8,12 +8,10 @@
 Adafruit_MPU6050 mpu;
 
 //sensor vars
-const int FL = A1;
-const int FR = A2;
-const int BR = A3;
-const int BL = A7;
-const int SDA = A4;
-const int SCL = A5;
+const int FL = A0;
+const int FR = A1;
+const int BR = A2;
+const int BL = A3;
 
 float calFL;
 float calFR;
@@ -79,11 +77,11 @@ void setup(){
   Serial.println("right foot sensor is calibrated");
 
   //MPU SETUP
-  if (!mpu.begin()) {
-    Serial.println("failed to find MPU6050 chip");
-  }else{
-	  Serial.println("MPU6050 found");
+  Serial.println("searching for MPU6050 chip");
+   {
+    Serial.print(".");
   }
+	Serial.println("MPU6050 found");
 
 	// set accelerometer range to +-8G
 	mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
@@ -94,14 +92,14 @@ void setup(){
 	// set filter bandwidth to 21 Hz
 	mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 
-  // //SD SETUP
-  // pinMode(CS, OUTPUT);
+  //SD SETUP
+  pinMode(CS, OUTPUT);
 
-  // if (!SD.begin(CS)) {
-  //   Serial.println("SD card failed, or not present");
-  // } else{
-  //   Serial.println("SD card initialized.");
-  // }
+  Serial.println("Searching for SD card module");
+  if (!SD.begin(CS)) {
+    Serial.print(".");
+  }
+  Serial.println("SD card initialized.");
 }
 
 void loop() {
@@ -140,21 +138,22 @@ void loop() {
 	Serial.print(temp.temperature);
 	Serial.println(" degC");
 
+  // Serial.print("Front: ");
   // Serial.print(frontPerc);
-  // Serial.print(",");
+  // Serial.print(", Back: ");
   // Serial.print(backPerc);
-  // Serial.print(",");
+  // Serial.print(", ");
   // Serial.print(analogRead(FR));
-  // Serial.print(",");
+  // Serial.print(", ");
   // Serial.print(analogRead(FL));
-  // Serial.print(",");
+  // Serial.print(", ");
   // Serial.print(analogRead(BL));
-  // Serial.print(",");
+  // Serial.print(", ");
   // Serial.print(analogRead(BR));
-  // Serial.print(",");
+  // Serial.print(", ");
   // Serial.println(millis());
 
-  // // Serial.println("");
+  Serial.println("");
 
   // //convert data to CSV format
   // dataString = String(frontPerc) + "," + String(backPerc) + "," + String(analogRead(FR)) + "," + String(analogRead(FL)) + "," + String(analogRead(BL)) + "," + 
