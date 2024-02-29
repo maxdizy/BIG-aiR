@@ -7,47 +7,61 @@
 
 Adafruit_MPU6050 mpu;
 
-// sensor vars
+// foot sensor vars
 const int FL = A0;
 const int FR = A1;
 const int BR = A2;
 const int BL = A3;
+
 float calFL;
 float calFR;
 float calBR;
 float calBL;
-int amplifier = 1.825;
 
-// SD vars
-const int CS = 10;
-String dataString;
-File sensorData;
+// //SD vars
+// const int CS = 10;
+
+// // interface vars
+// const int redLED = 5;
+// const int greenLED = 6;
+// const int button = 7;
+// int buttonState = digitalRead(button);
+// int loopCount = 0;
+
+String data;
+// File sensorData;
+
+int amplifier = 1.825;
 
 void calibrate(){
   calFL = analogRead(FL);
   calFR = analogRead(FR);
   calBR = analogRead(BR);
   calBL = analogRead(BL);
-  Serial.println("right foot sensor is calibrated");
 }
 
-void saveData(){
-  //check the card is still there
-  if(SD.exists("sensorData.csv")){
-    //append new data file
-    sensorData = SD.open("sensorData.csv", FILE_WRITE);
-    if (sensorData){
-      sensorData.println(dataString);
-      sensorData.close(); //close the file
-    }
-  }
-  else{
-    Serial.println("error writing to file. SD card not found");
-  }
-}
+// void saveData(){
+//   // check the card is active
+//   if(SD.exists("sensorData.csv")){
+//     // append new data file
+//     sensorData = SD.open("sensorData.csv", FILE_WRITE);
+//     if (sensorData){
+//       sensorData.println(dataString);
+//       sensorData.close();
+//     }
+//   }
+//   else{
+//     Serial.println("error writing to file. SD card not found");
+//   }
+// }
 
-void setup(void){
+void setup(){
   Serial.begin(115200);
+
+  // // interface setup
+  // // pinMode(button, INPUT);
+  // // pinMode(redLED, OUTPUT);
+  // // pinMode(greenLED, OUTPUT);
 
   // foot sensor setup
   pinMode(FL, INPUT);
@@ -55,101 +69,140 @@ void setup(void){
   pinMode(BR, INPUT);
   pinMode(BL, INPUT);
 
-  //Send warnings if pressure area is not communicating
+  // analyze foot sensor for issues
+  Serial.println("analyzing foot sensor for issues...");
   if(analogRead(FL)==0){
       Serial.println("WARNING. right foot front left sensor not connected.");
+      // digitalWrite(redLED, HIGH);
   }
   else if(analogRead(FR)==0){
       Serial.println("WARNING. right foot front right sensor not connected.");
+      // digitalWrite(redLED, HIGH);
   }
   else if(analogRead(BR)==0){
       Serial.println("WARNING. right foot back right sensor not connected.");
+      // digitalWrite(redLED, HIGH);
   }
   else if(analogRead(BL)==0){
       Serial.println("WARNING. right foot back left sensor not connected.");
-  }  
+      // digitalWrite(redLED, HIGH);
+  }
+  else{
+    Serial.println("Foot sensor analysis complete. No errors.");
+  }
+
+  // // caribrate on boot
+  Serial.println("calibrating foot sensor...");
+  // digitalWrite(greenLED, HIGH);
+  // digitalWrite(redLED, HIGH);
+  // delay(1500);
   calibrate();
+  // delay(1500);
+  // digitalWrite(greenLED, LOW);
+  // digitalWrite(redLED, LOW);
+  Serial.println("calibration completed");
 
   // mpu setup
-  Serial.println("searching for MPU6050 chip");
+  Serial.println("Searching for MPU6050");
   while (!mpu.begin()) {
     Serial.print(".");
+    delay(1000);
   }
 	Serial.println("MPU6050 found");
-
 	mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
 	mpu.setGyroRange(MPU6050_RANGE_500_DEG);
 	mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 
-  // SD setup
-  pinMode(CS, OUTPUT);
-
-  Serial.println("Searching for SD card module");
-  if (!SD.begin(CS)) {
-    Serial.print(".");
-  }
-  Serial.println("SD card initialized.");
+  // // SD setup
+  // pinMode(CS, OUTPUT);
+  // Serial.println("Searching for SD card");
+  // if (!SD.begin(CS)) {
+  //   Serial.print(".");
+  //   delay(1000);
+  // }
+  // Serial.println("SD card initialized");
+  // digitalWrite(greenLED, HIGH);
 }
 
 void loop() {
-  //get sensor events
+  unsigned long startTime = millis();
+
+  // // display interface LEDs
+  // if (loopCount % 3){
+  //   if (digitalRead(greenLED) == HIGH) digitalWrite(greenLED, LOW);
+  //   else digitalWrite(greenLED, HIGH);
+  // }
+
+  // get sensor events
   sensors_event_t a, g, temp;
 
-  //calculate front and back foot sensor values
+  // calculate front and back weight distrobutions
   float valFront = constrain((analogRead(FR) - calFR)*amplifier, 0.1, __FLT_MAX__) + constrain((analogRead(FL) - calFL)*amplifier, 0.1, __FLT_MAX__);
   float valBack = constrain((analogRead(BR) - calBR), 0.1, __FLT_MAX__) + constrain((analogRead(BL) - calBL), 0.1, __FLT_MAX__);
-
-  //calculate front and back weight distribution percentages
   float frontPerc = (valFront/(valFront+valBack)) * 100;
   float backPerc = (valBack/(valFront+valBack)) * 100;
 
-  //get mpu readings
+  // get mpu readings
+  // Serial.println("LOOP START");
   mpu.getEvent(&a, &g, &temp);
 
-	//print sensor readings
-	Serial.print("Acceleration X: ");
-	Serial.print(a.acceleration.x);
-	Serial.print(", Y: ");
-	Serial.print(a.acceleration.y);
-	Serial.print(", Z: ");
-	Serial.print(a.acceleration.z);
-	Serial.println(" m/s^2");
+  // //print sensor readings
+  // Serial.print("Acceleration X: ");
+  // Serial.print(a.acceleration.x);
+  // Serial.print(", Y: ");
+  // Serial.print(a.acceleration.y);
+  // Serial.print(", Z: ");
+  // Serial.print(a.acceleration.z);
+  // Serial.println(" m/s^2");
 
-	Serial.print("Rotation X: ");
-	Serial.print(g.gyro.x);
-	Serial.print(", Y: ");
-	Serial.print(g.gyro.y);
-	Serial.print(", Z: ");
-	Serial.print(g.gyro.z);
-	Serial.println(" rad/s");
+  // Serial.print("Rotation X: ");
+  // Serial.print(g.gyro.x);
+  // Serial.print(", Y: ");
+  // Serial.print(g.gyro.y);
+  // Serial.print(", Z: ");
+  // Serial.print(g.gyro.z);
+  // Serial.println(" rad/s");
 
-	Serial.print("Temperature: ");
-	Serial.print(temp.temperature);
-	Serial.println(" degC");
+  // Serial.print("Temperature: ");
+  // Serial.print(temp.temperature);
+  // Serial.println(" degC");
 
-  // Serial.print("Front: ");
   // Serial.print(frontPerc);
-  // Serial.print(", Back: ");
+  // Serial.print(",");
   // Serial.print(backPerc);
-  // Serial.print(", ");
+  // Serial.print(",");
   // Serial.print(analogRead(FR));
-  // Serial.print(", ");
+  // Serial.print(",");
   // Serial.print(analogRead(FL));
-  // Serial.print(", ");
+  // Serial.print(",");
   // Serial.print(analogRead(BL));
-  // Serial.print(", ");
+  // Serial.print(",");
   // Serial.print(analogRead(BR));
-  // Serial.print(", ");
+  // Serial.print(",");
   // Serial.println(millis());
 
-  Serial.println("");
+  // Serial.println("");
 
   // //convert data to CSV format
-  // dataString = String(frontPerc) + "," + String(backPerc) + "," + String(analogRead(FR)) + "," + String(analogRead(FL)) + "," + String(analogRead(BL)) + "," + 
-  // String(analogRead(BR)) + "," + String(a.acceleration.x) + "," + String(a.acceleration.y) + "," + String(a.acceleration.z) + "," + String(g.gyro.x) + "," + 
-  // String(g.gyro.x) + "," + String(g.gyro.x) + "," + String(temp.temperature) + "," + String(millis());
+  char dataString[60], frontPercStr[6], backPercStr[6], XaccelStr[6], YaccelStr[6], ZaccelStr[6], XgyroStr[6], YgyroStr[6], ZgyroStr[6];
+  dtostrf(frontPerc, 4, 2, frontPercStr);
+  dtostrf(backPerc, 4, 2, backPercStr);
+  dtostrf(a.acceleration.x, 4, 2, XaccelStr);
+  dtostrf(a.acceleration.y, 4, 2, YaccelStr);
+  dtostrf(a.acceleration.z, 4, 2, ZaccelStr);
+  dtostrf(g.gyro.x, 4, 2, XgyroStr);
+  dtostrf(g.gyro.y, 4, 2, YgyroStr);
+  dtostrf(g.gyro.z, 4, 2, ZgyroStr);
+
+  sprintf(dataString, "%s,%s,%s,%s,%s,%s,%s,%s,%d", frontPercStr, backPercStr, XaccelStr, YaccelStr, ZaccelStr, XgyroStr, YgyroStr, ZgyroStr, millis()/100);
+  Serial.println(dataString);
 
   // saveData();
 
-  delay(250);
+  // loopCount++;
+
+  // make sure to loop once every half a second
+  while (millis()-startTime < 500){
+    delay(1);
+  }
 }
