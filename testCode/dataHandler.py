@@ -5,7 +5,7 @@ airThresh = 140
 inAir = False
 tricks = []
 
-dataFile = pd.read_csv('data/testdata1.csv')
+dataFile = pd.read_csv('data/BIG_aiR_data.csv')
 df = pd.DataFrame(dataFile)
 
 #insert result col
