@@ -2,6 +2,16 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 import pandas as pd
 import numpy as np
+import os
+
+directory = "C:\\snowboard_model_weights"
+
+# Create the directory if it doesn't exist
+if not os.path.exists(directory):
+    os.makedirs(directory)
+
+# Define the full model path
+model_path = os.path.join(directory, "my_model.h5")
 
 airThresh = 140
 inAir = False
@@ -55,6 +65,9 @@ data = data.reshape((data.shape[0], data.shape[1], data.shape[2]))
 # Train the model
 # Train the model and save the history
 history = model.fit(data, labels, epochs=200, verbose=1)
+
+model.save(model_path)
+
 
 # history.history['loss'] will contain the loss at each epoch
 loss_per_epoch = history.history['loss']
