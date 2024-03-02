@@ -102,7 +102,7 @@ while(sample_num < 3 ):
         # Get indices of top features based on importance scores
         top_indices = np.argsort(consolidated_importance_scores)[-top_features:]
 
-        feedback.append(f"Feedback for selected trick {sample_num + 1}:")
+        feedback.append(f"Feedback for trick {sample_num + 1}:")
         for index in reversed(top_indices):  # Iterate in descending order of importance
             # print(top_indices)
             sensor_name = sensor_names[index]
