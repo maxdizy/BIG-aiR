@@ -70,3 +70,5 @@ model.save(model_path)
 for key in history.history:
     for epoch, value in enumerate(history.history[key]):
         print(f"Epoch {epoch + 1}: {key} = {value}")
+
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
