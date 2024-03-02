@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 
-airThresh = 100
+airThresh = 62
 inAir = False
 tricks = []
 
@@ -41,7 +41,7 @@ df['target'] = 0
 
 #detect tricks
 for i in range(df['RBV'].size-2):
-    comb = df['RFV'].iloc[i] + df['RBV'].iloc[i]
+    comb = df['RFV'].iloc[i] + df['RBV'].iloc[i] + df['LFV'].iloc[i] + df['LBV'].iloc[i]
 
     #find start of trick with outlier filter
     if ((inAir == False) & (comb < airThresh)):
@@ -54,9 +54,20 @@ for i in range(df['RBV'].size-2):
     if ((inAir == True) & (comb > airThresh)):
         inAir = False
 
+# label test data
+successfulAttempts = [0,1,2,3,4,6,7,12,13]
+target = np.array([1,1,1,1,1,0,1,1,0,0,0,0,1,1])
+# for i in range(len(tricks)):
+#     if i in successfulAttempts:
+#         tricks[i].loc[:,'target'] = 1
+
+tricks_test = tricks[-3:]
+trickData_test = np.array([np.array(trick_test.drop('target', axis=1)) for trick_test in tricks_test])
+#tricks = tricks[:-3]
+
 #concat data
 trickData = np.array([np.array(trick.drop('target', axis=1)) for trick in tricks])
-target = np.array([np.array(trick['target']) for trick in tricks])
+# target = np.array([np.array(trick['target']) for trick in tricks])
 
 #shape for model: 3 tricks, 12 steps, 7 sensors
 trickData = trickData.reshape((trickData.shape[0], trickData.shape[1], trickData.shape[2]))
