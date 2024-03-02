@@ -1,146 +1,122 @@
 import tensorflow as tf
-import pandas as pd
 import numpy as np
+import pandas as pd
+from datahandler import trickData, target, trickData_test
+# Assuming 'trickData_test' is already in your workspace, otherwise, load or preprocess it as necessary.
 
-directory = "C:\\snowboard_model_weights\\my_model.h5"
-data_path = 'C:\\Users\\zane5\\OneDrive\\Desktop\\snowBoardRCNN\\testdata1.csv'
+# Load the model
+model_path = "C:\\snowboard_model_weights\\my_model.h5"
+model = tf.keras.models.load_model(model_path)
 
-model = tf.keras.models.load_model(directory)
+# Prepare the input tensor
+# If trickData_test needs loading or preprocessing, make sure to do so before this step
+input_tensor = tf.convert_to_tensor(trickData_test[0:1], dtype=tf.float32)
 
-airThresh = 140
-inAir = False
-tricks = []
-
-df = pd.read_csv(data_path)
-
-# Add a new column Results with all zeros
-df['Results'] = 0
-
-print(df['FR'].size)
-
-#detect tricks
-for i in range(df['FR'].size-2):
-    #find start of trick with outlier filter
-    if (not inAir) and (df['FR'].iloc[i] < airThresh) and (df['FR'].iloc[i + 1] < airThresh) and (df['FR'].iloc[i + 2] < airThresh):
-        trickStart = i
-        inAir = True
-
-    #find end of trick with outlier filter
-    if (inAir) and (df['FR'].iloc[i] > airThresh) and (df['FR'].iloc[i + 1] > airThresh) and (df['FR'].iloc[i + 2] > airThresh):
-        trickEnd = i
-        trick_df = df.iloc[max(0, trickStart-4) : min(trickEnd+4, df['FR'].size-2)]
-
-        # If the number of timestamps is greater than 19, trim the trick data
-        if len(trick_df) > 19:
-            trick_df = trick_df.iloc[-19:]  # Keep the last 19 rows
-            
-        tricks.append(trick_df)
-        inAir = False
-
-num_timesteps = len(trick_df)
-num_features = 7    # number of sensor inputs
-
-# Convert list of DataFrames into a NumPy array
-data = np.array([np.array(trick.drop('Results', axis=1)) for trick in tricks])
-
-# Extract labels from the 'Results' column
-labels = np.array([np.array(trick['Results']) for trick in tricks])
-
-# Reshape data to be a 3D array: [samples, timesteps, features]
-data = data.reshape((data.shape[0], data.shape[1], data.shape[2]))
-
-
-# Assuming data is input data array shaped as [samples, timesteps, features]
-
-# Select a sample for analysis
-sample_index = 0  # For demonstration, select the first sample
-input_data = data[sample_index:sample_index+1]  # Keep the batch dimension
-
-# Convert input to a TensorFlow tensor
-input_tensor = tf.convert_to_tensor(input_data, dtype=tf.float32)
-
+# Calculate gradients to get importance scores
 with tf.GradientTape() as tape:
     tape.watch(input_tensor)
     predictions = model(input_tensor)
-    predicted_value = predictions[0, 0]
     print(predictions)
-    print(predicted_value)
+    
 
-# Compute gradients of the predicted value with respect to the input
-gradients = tape.gradient(predicted_value, input_tensor)
+# Get the gradients of the predicted value with respect to the input
+gradients = tape.gradient(predictions, input_tensor)
+# Aggregate importance scores across all outputs (if your model has multiple outputs)
+importance_scores = np.mean(np.abs(gradients), axis=0)
 
-# Process gradients to get importance scores
-importance_scores = tf.reduce_mean(tf.abs(gradients), axis=-1).numpy()
+# Assuming the first dimension is the batch dimension and you're interested in the first sample
+# Direct extraction of importance scores for the single sample and single output
+importance_scores_single_sample = np.abs(gradients.numpy().squeeze())
 
-# importance_score` now holds the importance of each timestep/feature
+# Calculate the mean importance score for each feature across all sets of scores
+consolidated_importance_scores = np.mean(importance_scores_single_sample, axis=0)
+# print(consolidated_importance_scores)
 
-# set up thresholds to compare sensor readings to "correct" values
+
+
+# Define the thresholds for feedback
+# Define the thresholds for feedback
+# The values here are placeholders. Replace them with your actual thresholds based on domain knowledge.
 thresholds = {
-    'Front %': (40, 60),
-    'Back %': (40, 60),
-    'FR': (150, 250),
-    'FL': (150, 250),
-    'BL': (150, 250),
-    'BR': (150, 250),
-    'Millis': (0, 1000)  # Assuming 'Millis' is a timestamp and does not need a range
+    'RFP': (30, 60), # Assuming a range around the average to allow for normal fluctuations
+    'RBP': (100, 130), # Same as above
+    'RFV': (50, 70), # This seems to be a percentage or a value that should be close to the average
+    'RBV': (250, 500), # Allowing a broad range due to high max value
+    'RZA': (-9, 12), # A range around the average allowing for some negative values
+    'RXA': (-3, 0), # Assuming that positive values are not expected
+    'RZG': (-1, 3), # A small range around the average
+    'LFP': (30, 70), # A range around the average
+    'LBP': (130, 160), # Same as above
+    'LFV': (200, 500), # A broad range considering the high maximum
+    'LBV': (400, 600), # A range that captures most of the data
+    'LZA': (8, 30), # A range around the average, assuming positive values are expected
+    'LXA': (0, 30), # A range around the average, allowing for slight negative values
+    'LZG': (0, 10), # A range around the average
+    'M': (3500, 4500), # A broad range considering the high maximum
+    'target':(1,1)
 }
 
 
-def generate_feedback(importance_scores, trick_data, top_timesteps=3):
-    """
-    Generate feedback based on importance scores and trick data.
-    importance_scores: Importance of each timestep, as calculated by the model.
-    trick_data: Sensor data for the specific trick, shape (timesteps, features).
-    top_timesteps: Number of timesteps to consider for generating feedback.
-    """
-    feedback = []
-  
-    sensor_names = ['Front %', 'Back %', 'FR', 'FL', 'BL', 'BR', 'Millis']
-    
-    # Find the top timesteps based on importance scores
-    top_indices = importance_scores.argsort()[-top_timesteps:][::-1]
-    
-    for index in top_indices:
-        feedback.append(f"At timestep {index}, consider the following adjustments:")
-        # Ensure that sensor_values is a 1D array
-        sensor_values = trick_data[index, :]  # This should select a single row and give a 1D array
+indicies = {
+    'RFP': 0,  
+    'RBP': 1, 
+    'RFV': 2, 
+    'RBV': 3,  
+    'RZA': 4, 
+    'RXA': 5,  
+    'RZG': 6,  
+    'LFP': 7,  
+    'LBP': 8,  
+    'LFV': 9, 
+    'LBV': 10,  
+    'LZA': 11,  
+    'LXA': 12,  
+    'LZG': 13,  
+    'M': 14,  
+    'target':15
+}
 
-        # Generate feedback for each sensor at this timestep
-        for sensor_index, sensor_value in enumerate(sensor_values):
-            sensor_name = sensor_names[sensor_index]
-            ideal_range = thresholds[sensor_name]
-
-            # Compare the sensor value to the ideal range and provide feedback
-            if sensor_value < ideal_range[0] or sensor_value > ideal_range[1]:
-                feedback.append(f"The {sensor_name} sensor reading of {sensor_value} is outside the ideal range of {ideal_range}. Consider adjusting your position.")
-            else:
-                feedback.append(f"The {sensor_name} sensor reading of {sensor_value} is within the ideal range.")
-
-    return "\n".join(feedback)
-
-# Generate feedback using the function
-
-importance_scores = np.squeeze(importance_scores)
-print(f"importance_scores shape after squeeze: {importance_scores.shape}")
-tracker = 0
-
-# Ensuring that we correctly select the data for one trick
-if tricks:  # Check if we have detected any tricks
-    for trick_index, trick_df in enumerate(tricks):
-        if tracker == 0:
-            # Convert the trick DataFrame to a numpy array and drop the 'Results' column
-            trick_data = trick_df.drop('Results', axis=1).to_numpy()
-
-            # Print the shape of trick_data to make sure it is (timesteps, features)
-            print(f"trick_data shape for trick {trick_index}: {trick_data.shape}")
-
-            # Generate feedback for the current trick
-            feedback = generate_feedback(importance_scores, trick_data)
-            print(f"Feedback for trick {trick_index}:\n{feedback}\n")
-            tracker = tracker + 1
-            break
-        else:
-            break
+# If trickData_test is a DataFrame, extract the values
+if isinstance(trickData_test, pd.DataFrame):
+    sensor_data = trickData_test.to_numpy()
 else:
-    print("No tricks were detected.")
-    
+    sensor_data = trickData_test
+
+sensor_names = ['RFP', 'RBP', 'RFV', 'RBV', 'RZA', 'RXA', 'RZG', 'LFP', 'LBP', 'LFV', 'LBV', 'LZA', 'LXA', 'LZG', 'M', 'target']
+print(importance_scores)
+
+
+def generate_feedback(consolidated_importance_scores, sample, thresholds, sensor_names, top_features=3):
+    feedback = []
+    # Get indices of top features based on importance scores
+    top_indices = np.argsort(consolidated_importance_scores)[-top_features:]
+
+    feedback.append("Feedback for the selected sample:")
+    for index in reversed(top_indices):  # Iterate in descending order of importance
+        # print(top_indices)
+        sensor_name = sensor_names[index]
+        # print(sensor_name)
+        # print(indicies[sensor_name])
+        # print(index)
+        sensor_value = sample[index-1][indicies[sensor_name]]  # Assuming 'sample' is a 1D array of feature values
+        # print(sensor_value)
+        
+        
+        ideal_range = thresholds[sensor_name]
+
+        # Generate feedback based on how sensor value compares to the ideal range
+        if sensor_value < ideal_range[0]:
+            feedback_msg = f"{sensor_name}: Value {sensor_value} is below the ideal range ({ideal_range[0]}, {ideal_range[1]}). Consider adjusting."
+        elif sensor_value > ideal_range[1]:
+            feedback_msg = f"{sensor_name}: Value {sensor_value} is above the ideal range ({ideal_range[0]}, {ideal_range[1]}). Consider adjusting."
+        else:
+            feedback_msg = f"{sensor_name}: Value {sensor_value} is within the ideal range."
+
+        feedback.append(feedback_msg)
+
+    return feedback
+
+# Assuming trickData_test[0] is correctly formatted as a 1D array of feature values for the sample of interest
+sample_feature_values = trickData_test[0] if isinstance(trickData_test, np.ndarray) else trickData_test.iloc[0].to_numpy()
+feedback = generate_feedback(consolidated_importance_scores, sample_feature_values, thresholds, sensor_names)
+print("\n".join(feedback))
