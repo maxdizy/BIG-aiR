@@ -2,8 +2,6 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 
-
-
 directory = "C:\\snowboard_model_weights\\my_model.h5"
 data_path = 'C:\\Users\\zane5\\OneDrive\\Desktop\\snowBoardRCNN\\testdata1.csv'
 
@@ -65,6 +63,8 @@ with tf.GradientTape() as tape:
     tape.watch(input_tensor)
     predictions = model(input_tensor)
     predicted_value = predictions[0, 0]
+    print(predictions)
+    print(predicted_value)
 
 # Compute gradients of the predicted value with respect to the input
 gradients = tape.gradient(predicted_value, input_tensor)
@@ -118,28 +118,29 @@ def generate_feedback(importance_scores, trick_data, top_timesteps=3):
 
     return "\n".join(feedback)
 
-
-
-
-
 # Generate feedback using the function
 
 importance_scores = np.squeeze(importance_scores)
 print(f"importance_scores shape after squeeze: {importance_scores.shape}")
+tracker = 0
 
 # Ensuring that we correctly select the data for one trick
 if tricks:  # Check if we have detected any tricks
     for trick_index, trick_df in enumerate(tricks):
-        # Convert the trick DataFrame to a numpy array and drop the 'Results' column
-        trick_data = trick_df.drop('Results', axis=1).to_numpy()
+        if tracker == 0:
+            # Convert the trick DataFrame to a numpy array and drop the 'Results' column
+            trick_data = trick_df.drop('Results', axis=1).to_numpy()
 
-        # Print the shape of trick_data to make sure it is (timesteps, features)
-        print(f"trick_data shape for trick {trick_index}: {trick_data.shape}")
+            # Print the shape of trick_data to make sure it is (timesteps, features)
+            print(f"trick_data shape for trick {trick_index}: {trick_data.shape}")
 
-        # Generate feedback for the current trick
-        feedback = generate_feedback(importance_scores, trick_data)
-        print(f"Feedback for trick {trick_index}:\n{feedback}\n")
+            # Generate feedback for the current trick
+            feedback = generate_feedback(importance_scores, trick_data)
+            print(f"Feedback for trick {trick_index}:\n{feedback}\n")
+            tracker = tracker + 1
+            break
+        else:
+            break
 else:
     print("No tricks were detected.")
-
-
+    
